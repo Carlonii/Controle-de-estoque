@@ -1,6 +1,7 @@
 import mysql.connector
 from createTables import *
 from functions import *
+from datetime import datetime
 
 db = mysql.connector.connect(
     host ="localhost",
@@ -19,8 +20,9 @@ def main():
         if login == 1:
             username = input("Digite seu username \n")
             passwd = input("Digite sua senha \n")
-            if fazer_login(username, passwd) == 1:
-                telaAdm()
+            responsavel = fazer_login(username, passwd)
+            if responsavel != 0:
+                telaAdm(username)
             else:
                 print("Usuario ou senha estao incorretos")
                 break
@@ -28,8 +30,9 @@ def main():
         if login == 2:
             username = input("Digite seu username \n")
             passwd = input("Digite sua senha \n")
-            if fazer_login_func(username, passwd) == 1:
-                telaFunc()
+            responsavel = fazer_login_func(username, passwd)
+            if responsavel != 0:
+                telaFunc(username)
             else:
                 print("Usuario ou senha estao incorretos")
                 break
@@ -39,7 +42,7 @@ def main():
     
     
 
-def telaAdm():
+def telaAdm(username):
     op = 0
     while op != 4:
         op = input("Qual menu deseja acessar ? \n1 - Menu Funcionarios \n2 - Menu Estoque \n3 - Menu Itens \n4 - Fechar Menu \n")
@@ -47,7 +50,7 @@ def telaAdm():
            menuFunc()
         elif op == '2':
             pass
-            menuEstoq()
+            menuEstoq(username)
         elif op == '3':
             pass
             menuItens()
@@ -66,12 +69,24 @@ def menuFunc():
             addFunc(user, passwd)
         elif op == '2':
             id = input("Qual o id do funcionario que voce deseja remover ? \n")
-            removeFunc(id)
+            mycursor.execute("SELECT id from Funcionario where id = %s", (id,))
+            idcheck = mycursor.fetchone()
+            if idcheck:
+                removeFunc(id)
+            else:
+                print("ID selecionado nao consta no banco de dados")
+            
         elif op == '3':
             id = input("Qual o id do funcionario que voce deseja alterar ? \n")
-            user = input("Qual o novo username do funcionario ? \n")
-            passwd = input("Qual a nova senha do funcionario ? \n")
-            alterFunc(id, user, passwd) 
+            mycursor.execute("SELECT id from Funcionario where id = %s", (id,))
+            idcheck = mycursor.fetchone()
+            if idcheck:
+                user = input("Qual o novo username do funcionario ? \n")
+                passwd = input("Qual a nova senha do funcionario ? \n")
+                alterFunc(id, user, passwd)
+            else:
+                print("ID selecionado nao consta no banco de dados")
+             
         elif op == '4':
             showFunc()
         elif op == '5':
@@ -82,18 +97,31 @@ def menuFunc():
     
 
 
-def menuEstoq():
+def menuEstoq(username):
     op = 0
     while op != 4:
         op = input("Qual operacao deseja realizar ? \n 1 - Adicionar ao estoque \n 2 - Remover do estoque \n 3 - Mostrar estoque \n 4 - Fechar Menu \n")
         if op == '1':
             idOp = int(input("Qual o ID do produto que voce deseja adicionar ? \n"))
             qntOp = int(input("Qual a quantidade que deseja adicionar ? \n"))
-            addQnt(idOp, qntOp)
+            mycursor.execute("SELECT id from Produto where id = %s", (idOp,))
+            idcheck = mycursor.fetchone()
+            if idcheck:
+                idcheck = int(idcheck[0])
+                addQnt(idOp, qntOp,username)
+            else:
+                print("ID selecionado nao consta no banco de dados")
         elif op == '2':
             idOp = int(input("Qual o ID do produto que voce deseja remover ? \n"))
             qntOp = int(input("Qual a quantidade que deseja remover ? \n"))
-            removeQnt(idOp, qntOp)
+            mycursor.execute("SELECT id from Produto where id = %s", (idOp,))
+            idcheck = mycursor.fetchone()
+            if idcheck:
+                idcheck = int(idcheck[0])
+                removeQnt(idOp, qntOp,username)
+            else:
+                print("ID selecionado nao consta no banco de dados")
+            
         elif op == '3':
             mostrarEstoque() 
         elif op == '4':
@@ -104,19 +132,38 @@ def menuEstoq():
 def menuItens():
     op = 0
     while op != 5:
-        op = input("Qual operacao deseja realizar ? \n 1 - Adicionar item \n 2 - Remover item \n 3 - Alterar item \n 4 - Mostrar itens 5 - Fechar menu \n")
+        op = input("Qual operacao deseja realizar ? \n 1 - Adicionar item \n 2 - Remover item \n 3 - Alterar item \n 4 - Mostrar itens \n 5 - Fechar menu \n")
         if op == '1':
             nomeItem = input("Qual o nome do item que voce deseja adicionar ? \n")
-            qntItem = int(input("Qual a quantidade que deseja adicionar ? \n"))
-            addItem(nomeItem, qntItem)
+            nomeItem = nomeItem.lower()
+            mycursor.execute("SELECT nome from Produto where nome = %s", (nomeItem,))
+            nomecheck = mycursor.fetchone()
+            if nomecheck:
+                print("Este nome ja esta associado a um item no banco de dados")
+            else:
+                qntItem = int(input("Qual a quantidade que deseja adicionar ? \n"))
+                addItem(nomeItem, qntItem)
+            
         elif op == '2':
             idItem = input("Qual o ID do item que voce deseja remover ? \n")
-            removeItem(idItem)
+            mycursor.execute("SELECT id from Produto where id = %s", (idItem,))
+            idcheck = mycursor.fetchone()
+            if idcheck:
+                removeItem(idItem)
+            else:
+                print("Item nao encontrado no banco de dados")
+            
         elif op == '3':
             id = input("Qual o id do item que voce deseja alterar ? \n")
-            name = "Qual o novo nome do item ? \n"
-            qnt = input("Qual a nova qnt do item ? \n")
-            alterarItem(id, name, qnt) 
+            mycursor.execute("SELECT id from Produto where id = %s", (id,))
+            idcheck = mycursor.fetchone()
+            if idcheck:
+                name = input("Qual o novo nome do item ? \n")
+                qnt = input("Qual a nova qnt do item ? \n")
+                alterarItem(id, name, qnt) 
+            else:
+                print("Item nao encontrado no banco de dados")
+            
         elif op == '4':
             mostrarEstoque() 
         elif op == '5':
@@ -125,18 +172,30 @@ def menuItens():
             print("Choose a valid option")  
 
 
-def telaFunc():
+def telaFunc(username):
     op = 0
     while op != 4:
         op = input("Qual operacao deseja realizar ? \n 1 - Adicionar ao estoque \n 2 - Remover do estoque \n 3 - Mostrar estoque \n 4 - Fechar Menu \n")
         if op == '1':
             idOp = int(input("Qual o ID do produto que voce deseja adicionar ? \n"))
             qntOp = int(input("Qual a quantidade que deseja adicionar ? \n"))
-            addQnt(idOp, qntOp)
+            mycursor.execute("SELECT id from Produto where id = %s", (idOp,))
+            idcheck = mycursor.fetchone()
+            if idcheck:
+                idcheck = int(idcheck[0])
+                addQnt(idOp, qntOp,username)
+            else:
+                print("ID selecionado nao consta no banco de dados")
         elif op == '2':
             idOp = int(input("Qual o ID do produto que voce deseja remover ? \n"))
             qntOp = int(input("Qual a quantidade que deseja remover ? \n"))
-            removeQnt(idOp, qntOp)
+            mycursor.execute("SELECT id from Produto where id = %s", (idOp,))
+            idcheck = mycursor.fetchone()
+            if idcheck:
+                idcheck = int(idcheck[0])
+                removeQnt(idOp, qntOp,username)
+            else:
+                print("ID selecionado nao consta no banco de dados")
         elif op == '3':
             mostrarEstoque() 
         elif op == '4':

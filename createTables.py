@@ -16,6 +16,6 @@ def createalltables():
     db.commit()
     mycursor.execute("CREATE TABLE produto (id int PRIMARY KEY AUTO_INCREMENT, quantidade int, nome varchar(50) )")
     db.commit()
-    mycursor.execute("CREATE TABLE trans (id int PRIMARY KEY AUTO_INCREMENT, prodId int, qnt int , operation varchar(50), respoonsavel varchar(50), FOREIGN KEY (prodId) REFERENCES produto(id) )")
+    mycursor.execute("CREATE TABLE trans (id int PRIMARY KEY AUTO_INCREMENT, prodId int, qnt int , operation varchar(50), respoonsavel varchar(50), FOREIGN KEY (prodId) REFERENCES produto(id), horario DATETIME )")
     db.commit()
 

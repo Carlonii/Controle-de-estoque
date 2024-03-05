@@ -1,4 +1,5 @@
 import mysql.connector
+from datetime import datetime
 
 db = mysql.connector.connect(
     host ="localhost",
@@ -29,13 +30,15 @@ def mostrarEstoque():
     for x in mycursor:
         print(x)
 
-def addQnt(id,qnt):
-    mycursor.execute("INSERT INTO Trans (prodId, qnt , operation) VALUES (%s,%s,%s)", (id, qnt, "add"))
+def addQnt(id,qnt,username):
+    horario_transacao = datetime.now()
+    mycursor.execute("INSERT INTO Trans (prodId, qnt , operation, horario,responsavel) VALUES (%s,%s,%s,%s,%s)", (id, qnt, "add",horario_transacao,username))
     db.commit()
     adicionarProduto(id,qnt)
 
-def removeQnt(id,qnt):
-    mycursor.execute("INSERT INTO Trans (prodId, qnt , operation) VALUES (%s,%s,%s)", (id, qnt, "remove"))
+def removeQnt(id,qnt,username):
+    horario_transacao = datetime.now()
+    mycursor.execute("INSERT INTO Trans (prodId, qnt , operation, horario,responsavel) VALUES (%s,%s,%s,%s,%s)", (id, qnt, "remove",horario_transacao,username))
     db.commit()
     removerProduto(id,qnt)
 
@@ -60,7 +63,7 @@ def fazer_login(username, passwd):
     result = mycursor.fetchone()
 
     if result:
-        return 1
+        return username
     else:
         return 0
     
@@ -69,7 +72,7 @@ def fazer_login_func(username, passwd):
     result = mycursor.fetchone()
 
     if result:
-        return 1
+        return username
     else:
         return 0
     
@@ -78,7 +81,7 @@ def addFunc(user, passwd):
     db.commit()
 
 def removeFunc(id):
-    mycursor.execute("DELETE FROM Funcionario WHERE id = (%s)", (id,))
+    mycursor.execute("DELETE FROM Funcionario WHERE id = %s", (id,))
     db.commit()
 
 def alterFunc(id, user , passwd):
