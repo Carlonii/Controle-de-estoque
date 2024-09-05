@@ -5,7 +5,7 @@ db = mysql.connector.connect(
     host ="localhost",
     user ="root",
     passwd ="1234",
-    database = "estoque"
+    database = "estoque_loja"
 )
 
 mycursor = db.cursor()
@@ -32,13 +32,13 @@ def mostrarEstoque():
 
 def addQnt(id,qnt,username):
     horario_transacao = datetime.now()
-    mycursor.execute("INSERT INTO Trans (prodId, qnt , operation, horario,responsavel) VALUES (%s,%s,%s,%s,%s)", (id, qnt, "add",horario_transacao,username))
+    mycursor.execute("INSERT INTO Trans (prodId, qnt , operation, horario,respoonsavel) VALUES (%s,%s,%s,%s,%s)", (id, qnt, "add",horario_transacao,username))
     db.commit()
     adicionarProduto(id,qnt)
 
 def removeQnt(id,qnt,username):
     horario_transacao = datetime.now()
-    mycursor.execute("INSERT INTO Trans (prodId, qnt , operation, horario,responsavel) VALUES (%s,%s,%s,%s,%s)", (id, qnt, "remove",horario_transacao,username))
+    mycursor.execute("INSERT INTO Trans (prodId, qnt , operation, horario,respoonsavel) VALUES (%s,%s,%s,%s,%s)", (id, qnt, "remove",horario_transacao,username))
     db.commit()
     removerProduto(id,qnt)
 
